@@ -3,10 +3,17 @@ from typing import Tuple
 
 
 def _resolve_folder(base_folder: str) -> str:
-    """Return an absolute folder path for the database."""
+    """Return an absolute folder path for the database.
+
+    Using the project root instead of the current working directory ensures
+    that we always point to the same database file, even if the app is started
+    from different paths (e.g., during deployments or CLI usage).
+    """
     if os.path.isabs(base_folder):
         return base_folder
-    return os.path.join(os.getcwd(), base_folder)
+
+    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+    return os.path.join(project_root, base_folder)
 
 
 def get_database_location() -> Tuple[str, str]:
