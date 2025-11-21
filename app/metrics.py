@@ -44,11 +44,15 @@ def detect_device(user_agent):
         return "unknown"
 
     ua = parse(user_agent)
-    os_family = (ua.os.family or "").lower()
+    # Prefer boolean flags when available (development branch) to keep
+    # compatibility, otherwise fall back to OS family strings (current
+    # environment).
+    if getattr(ua, "is_android", False):
+        return "android"
+    if getattr(ua, "is_ios", False):
+        return "ios"
 
-    # user_agents exposes OS family strings instead of boolean platform flags
-    # in this environment. Rely on those values first before falling back to
-    # substring checks.
+    os_family = (ua.os.family or "").lower()
     if "android" in os_family:
         return "android"
     if os_family in ("ios", "ipados"):
