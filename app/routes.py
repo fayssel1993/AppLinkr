@@ -78,6 +78,7 @@ def setup_routes(app, SERVER_URL, PASSWORD):
             return "QR Code not found", 404
 
         app_store_url, play_store_url = qr_code_data
+        fallback_url = "https://worldwatercongress.com"
 
         # Get user agent and determine device type
         user_agent = request.headers.get('User-Agent')
@@ -86,10 +87,14 @@ def setup_routes(app, SERVER_URL, PASSWORD):
         # Redirect based on device type
         if device == "android" and play_store_url:
             return redirect(play_store_url)
-        elif device == "ios" and app_store_url:
+        if device == "ios" and app_store_url:
             return redirect(app_store_url)
-        else:
-            return "Device not recognized or no URL provided", 400
+
+        # For any other platform, fall back to the provided link
+        if fallback_url:
+            return redirect(fallback_url)
+
+        return "Device not recognized or no URL provided", 400
 
     # ====================
     # AUTHENTICATION ROUTES
