@@ -264,6 +264,33 @@
             align-items: start;
         }
 
+        .mode-toggle {
+            display: inline-flex;
+            padding: 6px;
+            background: var(--gray-100);
+            border-radius: 14px;
+            gap: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .toggle-btn {
+            border: none;
+            background: transparent;
+            padding: 0.6rem 0.9rem;
+            border-radius: 10px;
+            color: var(--gray-600);
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-btn.active {
+            background: var(--white);
+            box-shadow: var(--shadow-sm);
+            color: var(--dark);
+        }
+
         .form-group {
             margin-bottom: 2rem;
         }
@@ -347,6 +374,40 @@
             left: 100%;
         }
 
+        .style-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .color-input {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            background: var(--white);
+        }
+
+        .color-input input[type="color"] {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: none;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        .color-input input[type="text"] {
+            flex: 1;
+            padding: 0.65rem 0.75rem;
+            border: 1px solid var(--gray-200);
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+        }
+
         /* QR Display */
         .qr-display {
             text-align: center;
@@ -404,6 +465,37 @@
             gap: 1rem;
             justify-content: center;
             margin-top: 1rem;
+        }
+
+        .share-card {
+            margin-top: 1rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 0.75rem 0.85rem;
+        }
+
+        .share-input {
+            width: 100%;
+            border: 1px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(0,0,0,0.25);
+            color: white;
+            padding: 0.65rem 0.75rem;
+            font-family: 'Inter', monospace;
+            font-size: 0.9rem;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35rem 0.75rem;
+            background: rgba(255,255,255,0.08);
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            letter-spacing: 0.01em;
+            color: rgba(255,255,255,0.9);
         }
 
         .btn-secondary {
@@ -595,6 +687,10 @@
         <div class="qr-card">
             <div class="form-section">
                 <div class="form-container">
+                    <div class="mode-toggle" id="modeToggle">
+                        <button type="button" class="toggle-btn active" data-mode="app">App download</button>
+                        <button type="button" class="toggle-btn" data-mode="link">Website / campaign</button>
+                    </div>
                     <form id="qrForm">
                         <div class="form-group">
                             <label for="appName">App Name</label>
@@ -604,19 +700,41 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group" id="iosGroup">
                             <label for="iosUrl">iOS App Store URL</label>
                             <div class="input-wrapper">
-                                <input type="url" id="iosUrl" class="form-input" placeholder="https://apps.apple.com/app/..." required>
+                                <input type="url" id="iosUrl" class="form-input" placeholder="https://apps.apple.com/app/...">
                                 <span class="input-icon">🍎</span>
                             </div>
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group" id="androidGroup">
                             <label for="androidUrl">Google Play Store URL</label>
                             <div class="input-wrapper">
-                                <input type="url" id="androidUrl" class="form-input" placeholder="https://play.google.com/store/apps/..." required>
+                                <input type="url" id="androidUrl" class="form-input" placeholder="https://play.google.com/store/apps/...">
                                 <span class="input-icon">🤖</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="linkGroup" style="display: none;">
+                            <label for="contentUrl">Destination URL</label>
+                            <div class="input-wrapper">
+                                <input type="url" id="contentUrl" class="form-input" placeholder="https://your-site.com/landing"> 
+                                <span class="input-icon">🔗</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>QR style</label>
+                            <div class="style-grid">
+                                <label class="color-input">
+                                    <input type="color" id="qrColor" value="#111827">
+                                    <input type="text" id="qrColorText" value="#111827" aria-label="QR foreground color">
+                                </label>
+                                <label class="color-input">
+                                    <input type="color" id="qrBackground" value="#ffffff">
+                                    <input type="text" id="qrBackgroundText" value="#ffffff" aria-label="QR background color">
+                                </label>
                             </div>
                         </div>
 
@@ -626,22 +744,33 @@
                     </form>
                 </div>
 
-                <div class="qr-display">
-                    <div class="qr-preview" id="qrPreview">
-                        <div class="qr-placeholder">
-                            <div class="qr-placeholder-icon">📱</div>
-                            <p>Your QR code will appear here</p>
+                    <div class="qr-display">
+                        <div class="qr-preview" id="qrPreview">
+                            <div class="qr-placeholder">
+                                <div class="qr-placeholder-icon">📱</div>
+                                <p>Your QR code will appear here</p>
+                            </div>
+                        </div>
+                        <div class="qr-actions" id="qrActions" style="display: none;">
+                            <a href="#" class="btn-secondary" id="downloadBtn">
+                                💾 Download
+                            </a>
+                            <button class="btn-secondary" onclick="copyToClipboard()">
+                                📋 Copy Link
+                            </button>
+                        </div>
+                        <div class="share-card" id="shareCard" style="display: none;">
+                            <div class="pill">🔗 Multi-device ready</div>
+                            <div style="margin-top: 0.5rem;">
+                                <p style="opacity: 0.85; font-weight: 600; margin-bottom: 0.35rem;">Share link</p>
+                                <input id="shareLink" class="share-input" readonly>
+                            </div>
+                            <div style="margin-top: 0.75rem;">
+                                <p style="opacity: 0.85; font-weight: 600; margin-bottom: 0.35rem;">Embed snippet</p>
+                                <input id="embedCode" class="share-input" readonly>
+                            </div>
                         </div>
                     </div>
-                    <div class="qr-actions" id="qrActions" style="display: none;">
-                        <a href="#" class="btn-secondary" id="downloadBtn">
-                            💾 Download
-                        </a>
-                        <button class="btn-secondary" onclick="copyToClipboard()">
-                            📋 Copy Link
-                        </button>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -684,13 +813,53 @@
 
         // QR Code generation
         let currentQRData = null;
+        let currentMode = 'app';
+
+        // Mode switching inspired by multi-template QR builders
+        document.getElementById('modeToggle').addEventListener('click', (event) => {
+            const btn = event.target.closest('.toggle-btn');
+            if (!btn) return;
+
+            currentMode = btn.dataset.mode;
+
+            document.querySelectorAll('#modeToggle .toggle-btn').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
+
+            const isLinkMode = currentMode === 'link';
+            document.getElementById('iosGroup').style.display = isLinkMode ? 'none' : 'block';
+            document.getElementById('androidGroup').style.display = isLinkMode ? 'none' : 'block';
+            document.getElementById('linkGroup').style.display = isLinkMode ? 'block' : 'none';
+
+            document.getElementById('iosUrl').required = !isLinkMode;
+            document.getElementById('androidUrl').required = !isLinkMode;
+            document.getElementById('contentUrl').required = isLinkMode;
+        });
+
+        // Keep color pickers and text inputs in sync for quick personalization
+        function syncColorInputs(colorEl, textEl) {
+            colorEl.addEventListener('input', () => {
+                textEl.value = colorEl.value;
+            });
+            textEl.addEventListener('input', () => {
+                if (textEl.value.startsWith('#') && (textEl.value.length === 7 || textEl.value.length === 4)) {
+                    colorEl.value = textEl.value;
+                }
+            });
+        }
+
+        syncColorInputs(document.getElementById('qrColor'), document.getElementById('qrColorText'));
+        syncColorInputs(document.getElementById('qrBackground'), document.getElementById('qrBackgroundText'));
 
         document.getElementById('qrForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             const appName = document.getElementById('appName').value;
             const iosUrl = document.getElementById('iosUrl').value;
             const androidUrl = document.getElementById('androidUrl').value;
+            const contentUrl = document.getElementById('contentUrl').value;
+
+            const qrColor = document.getElementById('qrColorText').value;
+            const qrBackground = document.getElementById('qrBackgroundText').value;
             
             const generateBtn = document.getElementById('generateBtn');
             const qrPreview = document.getElementById('qrPreview');
@@ -699,13 +868,24 @@
             // Show loading state
             generateBtn.classList.add('loading');
             generateBtn.innerHTML = '<span>Generating...</span>';
+
+            if (currentMode === 'app' && !iosUrl && !androidUrl) {
+                showMessage('Add at least one store link to generate your download QR.', 'error');
+                generateBtn.classList.remove('loading');
+                generateBtn.innerHTML = '<span>Generate QR Code</span>';
+                return;
+            }
             
             try {
                 // Create form data to send to Flask backend
                 const formData = new FormData();
                 formData.append('title', appName);
+                formData.append('qr_type', currentMode);
                 formData.append('app_store_url', iosUrl);
                 formData.append('play_store_url', androidUrl);
+                formData.append('content', contentUrl);
+                formData.append('qr_color', qrColor);
+                formData.append('qr_background', qrBackground);
                 
                 // Call your Flask /create endpoint with JSON headers for modern response
                 const response = await fetch('/create', {
@@ -728,18 +908,24 @@
                             currentQRData = {
                                 url: data.redirect_url,
                                 imageUrl: data.qr_code_url,
-                                appName: appName
+                                appName: appName,
+                                redirectUrl: data.redirect_url
                             };
-                            
+
                             // Display the QR code image directly from your backend
                             qrPreview.innerHTML = `<img src="${data.qr_code_url}" alt="QR Code" style="max-width: 256px; border-radius: 12px; box-shadow: var(--shadow-md);">`;
                             qrPreview.classList.add('has-qr');
                             qrActions.style.display = 'flex';
-                            
+                            document.getElementById('shareCard').style.display = 'block';
+
                             // Set up download link
                             document.getElementById('downloadBtn').href = data.qr_code_url;
                             document.getElementById('downloadBtn').download = `${appName}-qr-code.png`;
-                            
+
+                            // Populate share surfaces
+                            document.getElementById('shareLink').value = data.redirect_url;
+                            document.getElementById('embedCode').value = `<a href="${data.redirect_url}"><img src="${data.qr_code_url}" alt="QR code for ${appName}" style="width:220px;"></a>`;
+
                             showMessage('QR code generated successfully!', 'success');
                         } else {
                             throw new Error(data.message || 'QR code generation failed');
@@ -761,19 +947,27 @@
                         const qrCodeImg = doc.querySelector('img[src*="/show/"]');
                         if (qrCodeImg) {
                             const qrCodeUrl = qrCodeImg.src;
-                            
+                            const redirectUrl = currentMode === 'link'
+                                ? `${window.location.origin}/redirect_standard?qr_code_id=${qrCodeUrl.split('/').pop()}`
+                                : `${window.location.origin}/redirect/${qrCodeUrl.split('/').pop()}`;
+
                             currentQRData = {
                                 url: qrCodeUrl,
                                 imageUrl: qrCodeUrl,
-                                appName: appName
+                                appName: appName,
+                                redirectUrl
                             };
-                            
+
                             qrPreview.innerHTML = `<img src="${qrCodeUrl}" alt="QR Code" style="max-width: 256px; border-radius: 12px; box-shadow: var(--shadow-md);">`;
                             qrPreview.classList.add('has-qr');
                             qrActions.style.display = 'flex';
-                            
+                            document.getElementById('shareCard').style.display = 'block';
+
                             document.getElementById('downloadBtn').href = qrCodeUrl;
                             document.getElementById('downloadBtn').download = `${appName}-qr-code.png`;
+
+                            document.getElementById('shareLink').value = redirectUrl;
+                            document.getElementById('embedCode').value = `<a href="${redirectUrl}"><img src="${qrCodeUrl}" alt="QR code for ${appName}" style="width:220px;"></a>`;
                             
                             showMessage('QR code generated successfully!', 'success');
                         } else {
@@ -794,10 +988,7 @@
         // Copy to clipboard
         function copyToClipboard() {
             if (currentQRData) {
-                // Extract the redirect URL from the QR code image URL
-                const qrCodeId = currentQRData.url.split('/').pop();
-                const redirectUrl = `${window.location.origin}/redirect/${qrCodeId}`;
-                
+                const redirectUrl = currentQRData.redirectUrl || document.getElementById('shareLink').value;
                 navigator.clipboard.writeText(redirectUrl).then(() => {
                     showMessage('Redirect link copied to clipboard!', 'success');
                 }).catch(() => {

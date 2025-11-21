@@ -17,6 +17,7 @@ The database will reset every 24 hours.
 - **Device Detection**: Automatically redirects users to the appropriate app store based on their device (iOS or Android).
 - **Tracking**: Monitor user interactions with each QR code, including access count and device type.
 - **Admin Panel**: View statistics, manage QR codes, and download the database backup.
+- **Campaign flexibility**: Generate app-download or website QR codes with quick color customization to match your brand.
 
 
 ## Roadmap
@@ -56,6 +57,7 @@ You can deploy AppLinkr on [Vercel](https://vercel.com/) using the included `ver
 2. **Set environment variables** in the Vercel dashboard (Project Settings → Environment Variables):
    - `PASSWORD`: admin password for the `/admin` panel.
    - `SERVER_URL`: the public URL of your deployment (e.g., `https://your-app.vercel.app`).
+   - `FALLBACK_URL`: optional URL to redirect desktop/unknown devices when no platform-specific store link is available.
 3. **Deploy** from the repository root:
    ```bash
    vercel --prod
