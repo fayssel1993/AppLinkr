@@ -40,12 +40,27 @@ def detect_browser_and_os(user_agent):
 
 def detect_device(user_agent):
     """Detect the device based on the User-Agent string."""
+    if not user_agent:
+        return "unknown"
+
+    ua = parse(user_agent)
+    os_family = (ua.os.family or "").lower()
+
+    # user_agents exposes OS family strings instead of boolean platform flags
+    # in this environment. Rely on those values first before falling back to
+    # substring checks.
+    if "android" in os_family:
+        return "android"
+    if os_family in ("ios", "ipados"):
+        return "ios"
+
+    # Fallback for uncommon or unparsed strings
     if "Android" in user_agent:
         return "android"
-    elif "iPhone" in user_agent or "iPad" in user_agent:
+    if any(ios_hint in user_agent for ios_hint in ("iPhone", "iPad", "iPod", "iOS")):
         return "ios"
-    else:
-        return "unknown"
+
+    return "unknown"
     
 def get_access_time(ip_address=None):
     """Get current timestamp in user's local timezone for access_time field."""
