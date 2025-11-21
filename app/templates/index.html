@@ -192,6 +192,48 @@
             margin: 0 auto 2rem;
         }
 
+        .reliability-banner {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin: 0 auto 2rem;
+            max-width: 900px;
+        }
+
+        .reliability-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 1rem 1.25rem;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border: 1px solid var(--gray-200);
+        }
+
+        .reliability-icon {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            background: linear-gradient(45deg, var(--accent), var(--primary));
+            color: white;
+            font-size: 1.1rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .reliability-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 0.1rem;
+            color: var(--gray-700);
+        }
+
+        .reliability-copy strong {
+            color: var(--gray-900);
+        }
+
         /* QR Generator Card */
         .qr-card {
             background: rgba(255, 255, 255, 0.95);
@@ -525,6 +567,30 @@
             <h1>Smart QR Code Generator</h1>
             <p>Create intelligent QR codes that automatically redirect users to the right app store based on their device. Track engagement with beautiful analytics.</p>
         </section>
+
+        <div class="reliability-banner">
+            <div class="reliability-card">
+                <div class="reliability-icon">🗂️</div>
+                <div class="reliability-copy">
+                    <strong>Persistent database</strong>
+                    <span>Your QR codes stay intact between admin sessions.</span>
+                </div>
+            </div>
+            <div class="reliability-card">
+                <div class="reliability-icon">🔒</div>
+                <div class="reliability-copy">
+                    <strong>Remembered logins</strong>
+                    <span>Sign in once and keep working without interruptions.</span>
+                </div>
+            </div>
+            <div class="reliability-card">
+                <div class="reliability-icon">⚡</div>
+                <div class="reliability-copy">
+                    <strong>Smoother experience</strong>
+                    <span>Streamlined flow with clearer prompts and actions.</span>
+                </div>
+            </div>
+        </div>
 
         <div class="qr-card">
             <div class="form-section">

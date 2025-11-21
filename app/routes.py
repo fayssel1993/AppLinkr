@@ -103,10 +103,15 @@ def setup_routes(app, SERVER_URL, PASSWORD):
     @app.route('/login', methods=['GET', 'POST'])
     def login_page():
         """Login page for authentication."""
+        if session.get('authenticated'):
+            return redirect(url_for('index'))
+
         if request.method == 'POST':
             password = request.form.get('password')
+            remember = bool(request.form.get('remember_me'))
             if password == PASSWORD:
                 session['authenticated'] = True
+                session.permanent = remember
                 # Redirect to where the user was trying to go, or index by default
                 next_page = request.args.get('next', url_for('index'))
                 return redirect(next_page)

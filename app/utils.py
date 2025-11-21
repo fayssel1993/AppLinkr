@@ -18,8 +18,10 @@ def process_metrics(qr_code_id, user_agent):
     access_time = get_access_time(ip_address)
     
     db = get_db()
-    db.execute('''INSERT INTO qr_code_tracking (qr_code_id, device_type, ip_address, access_time, region, browser, os, language, referrer)
-                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                  (qr_code_id, device, ip_address, access_time, region, browser, os, language, referrer))
+    db.execute(
+        '''INSERT INTO qr_code_tracking (qr_code_id, device_type, ip_address, access_time, region, browser, os, language, referrer)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+        (qr_code_id, device, ip_address, access_time, region, browser, os, language, referrer)
+    )
     db.commit()
     return device

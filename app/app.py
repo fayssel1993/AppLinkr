@@ -1,11 +1,13 @@
 from flask import Flask
+from datetime import timedelta
 import os
 from config import get_database_location
 from db import close_db
 from routes import setup_routes
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = os.getenv("SECRET_KEY", "applinkr-secret-key")
+app.permanent_session_lifetime = timedelta(days=int(os.getenv("SESSION_DAYS", "14")))
 
 # Database setup
 # Define the database location, falling back to a writable directory when needed
