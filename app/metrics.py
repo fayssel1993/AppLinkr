@@ -32,10 +32,16 @@ def get_location(ip_address):
 
 def detect_browser_and_os(user_agent):
     """Detect browser and operating system from User-Agent."""
-    ua = parse(user_agent)
-    browser = f"{ua.browser.family} {ua.browser.version_string}"
-    os = f"{ua.os.family} {ua.os.version_string}"
-    return browser, os
+    if not user_agent:
+        return "Unknown", "Unknown"
+
+    try:
+        ua = parse(user_agent)
+        browser = f"{ua.browser.family} {ua.browser.version_string}"
+        os = f"{ua.os.family} {ua.os.version_string}"
+        return browser, os
+    except Exception:
+        return "Unknown", "Unknown"
 
 
 def detect_device(user_agent):
@@ -44,24 +50,32 @@ def detect_device(user_agent):
         return "unknown"
 
     ua = parse(user_agent)
-    # Prefer boolean flags when available (development branch) to keep
-    # compatibility, otherwise fall back to OS family strings (current
-    # environment).
-    if getattr(ua, "is_android", False):
+
+    def flag_true(obj, *names):
+        """Return True if any named boolean attribute exists and is truthy."""
+        for name in names:
+            if getattr(obj, name, False):
+                return True
+        return False
+
+    # Prefer explicit platform flags when available (development branch support)
+    if flag_true(ua, "is_android", "is_android_device"):
         return "android"
-    if getattr(ua, "is_ios", False):
+    if flag_true(ua, "is_ios", "is_ios_device"):
         return "ios"
 
-    os_family = (ua.os.family or "").lower()
-    if "android" in os_family:
+    os_family = (getattr(ua, "os", None) and ua.os.family or "").lower()
+    device_family = (getattr(ua, "device", None) and ua.device.family or "").lower()
+
+    if "android" in os_family or "android" in device_family:
         return "android"
-    if os_family in ("ios", "ipados"):
+    if os_family in ("ios", "ipados") or device_family in ("iphone", "ipad", "ipod"):
         return "ios"
 
     # Fallback for uncommon or unparsed strings
-    if "Android" in user_agent:
+    if "android" in user_agent:
         return "android"
-    if any(ios_hint in user_agent for ios_hint in ("iPhone", "iPad", "iPod", "iOS")):
+    if any(ios_hint in user_agent for ios_hint in ("iphone", "ipad", "ipod", "ios")):
         return "ios"
 
     return "unknown"
