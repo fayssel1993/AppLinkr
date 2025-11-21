@@ -21,9 +21,12 @@ def get_client_ip():
 def get_location(ip_address):
     """Get the approximate location of the user from their IP address."""
     try:
-        response = requests.get(f'http://ipinfo.io/{ip_address}/json')
+        response = requests.get(f'http://ipinfo.io/{ip_address}/json', timeout=3)
+        response.raise_for_status()
         data = response.json()
-        return f"{data['city']}, {data['region']}, {data['country']}"
+        if all(key in data for key in ('city', 'region', 'country')):
+            return f"{data['city']}, {data['region']}, {data['country']}"
+        return "Unknown"
     except Exception as e:
         print(f"Error fetching location for IP {ip_address}: {e}")
         return "Unknown"
@@ -89,7 +92,8 @@ def get_access_time(ip_address=None):
         # Try to get timezone from IP location if provided
         if ip_address:
             try:
-                response = requests.get(f'http://ipinfo.io/{ip_address}/json')
+                response = requests.get(f'http://ipinfo.io/{ip_address}/json', timeout=3)
+                response.raise_for_status()
                 data = response.json()
                 if 'timezone' in data:
                     # Get local time in user's timezone

@@ -70,7 +70,7 @@ def setup_routes(app, SERVER_URL, PASSWORD):
     def redirect_to_store(qr_code_id):
         """Redirect the user to the appropriate store based on their device."""
         db = get_db()
-        
+
         # Fetch the app store and play store URLs from the database
         qr_code_data = db.execute('SELECT app_store_url, play_store_url FROM qr_codes WHERE id = ?', (qr_code_id,)).fetchone()
 
@@ -78,7 +78,10 @@ def setup_routes(app, SERVER_URL, PASSWORD):
             return "QR Code not found", 404
 
         app_store_url, play_store_url = qr_code_data
-        fallback_url = "https://worldwatercongress.com"
+
+        # Allow a configurable fallback URL, otherwise fall back to the home page
+        configured_fallback = os.getenv("FALLBACK_URL") or SERVER_URL or url_for('index')
+        fallback_url = configured_fallback if is_valid_url(configured_fallback) else url_for('index')
 
         # Get user agent and determine device type
         user_agent = request.headers.get('User-Agent')
@@ -144,34 +147,45 @@ def setup_routes(app, SERVER_URL, PASSWORD):
     def create():
         """Generate a QR code with either custom URL content or app store links."""
         title = request.form['title']
+        qr_type = request.form.get('qr_type', 'app')
         app_store_url = request.form.get('app_store_url')
         play_store_url = request.form.get('play_store_url')
         content = request.form.get('content')
 
-        # Check if either content or app store URLs are provided
-        if not content and not (app_store_url and play_store_url):
-            error_msg = 'You must provide either a standard URL or both App Store and Play Store URLs.'
+        def respond_with_error(message):
             if is_json_request():
-                return jsonify({'success': False, 'message': error_msg}), 400
-            flash(error_msg, 'danger')
+                return jsonify({'success': False, 'message': message}), 400
+            flash(message, 'danger')
             return render_template('index.html')
 
-        # Check for invalid URL in the standard content
-        if content and not is_valid_url(content):
-            error_msg = 'Invalid URL provided for standard QR.'
-            if is_json_request():
-                return jsonify({'success': False, 'message': error_msg}), 400
-            flash(error_msg, 'danger')
-            return render_template('index.html')
+        # Basic color validation to allow simple QR personalization
+        def sanitize_color(value, fallback):
+            if not value:
+                return fallback
+            value = value.strip()
+            if len(value) in (4, 7) and value.startswith('#'):
+                hex_part = value[1:]
+                if all(c in '0123456789abcdefABCDEF' for c in hex_part):
+                    return value
+            return fallback
 
-        # Check for invalid URLs in the app store fields
-        if not content:
-            if not (is_valid_url(app_store_url) and is_valid_url(play_store_url)):
-                error_msg = 'Invalid URLs for App Store or Play Store.'
-                if is_json_request():
-                    return jsonify({'success': False, 'message': error_msg}), 400
-                flash(error_msg, 'danger')
-                return render_template('index.html')
+        qr_color = sanitize_color(request.form.get('qr_color'), '#111827')
+        qr_background = sanitize_color(request.form.get('qr_background'), '#ffffff')
+
+        # Validate payload depending on requested QR type
+        if qr_type == 'link':
+            if not content:
+                return respond_with_error('Please provide a destination URL for your QR code.')
+            if not is_valid_url(content):
+                return respond_with_error('Invalid URL provided for your QR code.')
+        else:
+            # At least one store link is required; the other becomes optional with a fallback
+            if not (app_store_url or play_store_url):
+                return respond_with_error('Provide at least one store URL to generate an app download QR code.')
+            if app_store_url and not is_valid_url(app_store_url):
+                return respond_with_error('Invalid URL provided for the App Store.')
+            if play_store_url and not is_valid_url(play_store_url):
+                return respond_with_error('Invalid URL provided for Google Play.')
 
         # Create a database connection and cursor
         db = get_db()
@@ -181,14 +195,14 @@ def setup_routes(app, SERVER_URL, PASSWORD):
         qr_code_id = str(uuid.uuid4())
 
         # Generate the appropriate QR code URL
-        if content:  # If content for a standard QR code is provided
+        if qr_type == 'link':  # If content for a standard QR code is provided
             qr_url = f"{SERVER_URL}/redirect_standard?qr_code_id={qr_code_id}"  # Redirect for standard QR
             cursor.execute('INSERT INTO qr_codes (id, title, content, app_store_url, play_store_url) VALUES (?, ?, ?, ?, ?)',
                         (qr_code_id, title, content, "", ""))  # App Store URLs are empty for standard QR codes
         else:  # For app store links
             qr_url = f"{SERVER_URL}/redirect/{qr_code_id}"
             cursor.execute('INSERT INTO qr_codes (id, title, content, app_store_url, play_store_url) VALUES (?, ?, ?, ?, ?)',
-                        (qr_code_id, title, "", app_store_url, play_store_url))
+                        (qr_code_id, title, "", app_store_url or "", play_store_url or ""))
 
         db.commit()
 
@@ -201,7 +215,7 @@ def setup_routes(app, SERVER_URL, PASSWORD):
         )
         qr.add_data(qr_url)
         qr.make(fit=True)
-        img = qr.make_image(fill='black', back_color='white')
+        img = qr.make_image(fill_color=qr_color, back_color=qr_background)
 
         # Save the QR code image
         img_buf = io.BytesIO()
