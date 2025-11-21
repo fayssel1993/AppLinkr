@@ -1,5 +1,6 @@
 from flask import Flask
 import os
+from config import get_database_location
 from db import close_db
 from routes import setup_routes
 
@@ -7,13 +8,8 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
 # Database setup
-# Define the default database location inside the 'db' folder
-DATABASE_FOLDER = "db"
-DATABASE_PATH = f"{DATABASE_FOLDER}/database.db"
-
-# Ensure the 'db' folder exists
-if not os.path.exists(DATABASE_FOLDER):
-    os.makedirs(DATABASE_FOLDER)
+# Define the database location, falling back to a writable directory when needed
+DATABASE_FOLDER, DATABASE_PATH = get_database_location()
 
 # GET ENVS
 SERVER_URL = os.getenv("SERVER_URL")

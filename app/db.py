@@ -1,9 +1,10 @@
 import sqlite3
 from flask import g
 
+from config import get_database_location
 
-DATABASE_FOLDER = "db"
-DATABASE_PATH = f"{DATABASE_FOLDER}/database.db"
+
+DATABASE_FOLDER, DATABASE_PATH = get_database_location()
 
 def get_db():
     """Get a database connection."""
